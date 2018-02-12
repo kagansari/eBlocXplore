@@ -1,0 +1,17 @@
+/* DEFAULTS (override bootstrap styling) */
+
+html {
+  /* 1rem is 14px instead of bootstrap default (16px) */
+  font-size: 87.5%;
+}
+
+/* CUSTOM (page specific) */
+
+#recentBlocksTable, #recentTxTable {
+  border-collapse: collapse !important;
+}
+
+table.no-wrap td, table.no-wrap th {
+  white-space: nowrap;
+  padding: 0.5rem;
+}

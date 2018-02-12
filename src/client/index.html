@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>eBloc Blockchain Explorer</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/datatables.net-bs4/css/dataTables.bootstrap4.css">
+  <link rel="stylesheet" href="/index.css">
+  <script src="/jquery/jquery.min.js"></script>
+  <script src="/popper.js/umd/popper.min.js"></script>
+  <script src="/bootstrap/js/bootstrap.min.js"></script>
+  <script src="/datatables.net/jquery.dataTables.js"></script>
+  <script src="/datatables.net-bs4/js/dataTables.bootstrap4.js"></script>
+  <script src="/index.js"></script>
+  <!-- Makes broswer refresh when server is restarted (@TODO: remove it when NODE_ENV === 'production') -->
+  <script src="/reload/reload.js"></script>
+</head>
+
+<body>
+  <div class="container-fluid">
+    <!-- SEARCH BOX -->
+    <div class="col-12 col-lg-6 offset-lg-3 py-5">
+      <form id="searchForm" class="form form-row">
+        <div class="input-group">
+          <input type="text" name="query" class="form-control" placeholder="Search for account, tx hash or data">
+          <div class="input-group-append">
+            <input class="btn btn-outline-secondary" type="button" value="Search"/>
+          </div>
+        </div>
+      </form>
+      <div id="notFound" class="alert alert-danger d-none" role="alert">
+        No result
+      </div>
+    </div>
+    <!-- BLOCKS TABLE -->
+    <div class="col-12 table-responsive">
+      <table id="recentBlocksTable" class="table table-sm table-hover no-wrap"></table>
+    </div>
+    <!-- TRANSACTIONS TABLE -->
+    <div class="col-12 table-responsive">
+      <table id="recentTxTable" class="table table-sm table-hover no-wrap"></table>
+    </div>
+  </div>
+
+  <!-- SINGLE BLOCK -->
+  <div id="blockModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title" data-header>Block #</div>
+        </div>
+        <div class="modal-body">
+          <table class="table table-sm table-responsive no-wrap">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Block number</td>
+                <td data-property="number"></td>
+              </tr>
+              <tr>
+                <td>Difficulty</td>
+                <td data-property="difficulty"></td>
+              </tr>
+              <tr>
+                <td>Extra data</td>
+                <td data-property="extraData"></td>
+              </tr>
+              <tr>
+                <td>Gas limit</td>
+                <td data-property="gasLimit"></td>
+              </tr>
+              <tr>
+                <td>Gas used</td>
+                <td data-property="gasUsed"></td>
+              </tr>
+              <tr>
+                <td>Hash</td>
+                <td data-property="hash"></td>
+              </tr>
+              <tr>
+                <td>Miner</td>
+                <td data-property="minerHTML"></td>
+              </tr>
+              <tr>
+                <td>Nonce</td>
+                <td data-property="nonce"></td>
+              </tr>
+              <tr>
+                <td>Parent hash</td>
+                <td data-property="parentHashHTML"></td>
+              </tr>
+              <tr>
+                <td>Sha3 uncles</td>
+                <td data-property="sha3Uncles"></td>
+              </tr>
+              <tr>
+                <td>Size</td>
+                <td data-property="size"></td>
+              </tr>
+              <tr>
+                <td>State root</td>
+                <td data-property="stateRoot"></td>
+              </tr>
+              <tr>
+                <td>Time</td>
+                <td data-property="timestamp"></td>
+              </tr>
+              <tr>
+                <td>Total difficulty</td>
+                <td data-property="totalDifficulty"></td>
+              </tr>
+              <tr>
+                <td>Txs root</td>
+                <td data-property="transactionsRoot"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SINGLE TX -->
+  <div id="txModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title" data-header>Tx </div>
+        </div>
+        <div class="modal-body">
+          <table class="table table-sm table-responsive no-wrap">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Block hash</td>
+                <td data-property="blockHash"></td>
+              </tr>
+              <tr>
+                <td>Block number</td>
+                <td data-property="blockNumberHTML"></td>
+              </tr>
+              <tr>
+                <td>Tx index</td>
+                <td data-property="transactionIndex"></td>
+              </tr>
+              <tr>
+                <td>Chain ID</td>
+                <td data-property="chainId"></td>
+              </tr>
+              <tr>
+                <td>From</td>
+                <td data-property="fromHTML"></td>
+              </tr>
+              <tr>
+                <td>To</td>
+                <td data-property="toHTML"></td>
+              </tr>
+              <tr>
+                <td>Value</td>
+                <td data-property="value"></td>
+              </tr>
+              <tr>
+                <td>Gas</td>
+                <td data-property="gas"></td>
+              </tr>
+              <tr>
+                <td>Gas price</td>
+                <td data-property="gasPrice"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SINGLE ADDRESS -->
+  <div id="addressModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title" data-header></div>
+        </div>
+        <div class="modal-body">
+          <div>Balance: <span data-property="balance"></span></div>
+          <table class="table table-sm table-responsive no-wrap">
+            <thead>
+              <tr>
+                <th>Tx hash</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

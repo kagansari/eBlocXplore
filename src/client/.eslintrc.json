@@ -1,0 +1,15 @@
+{
+  "globals": {
+    "$": true,
+    "document": true
+  },
+  "rules": {
+    "prefer-arrow-callback": "off",
+    "func-names": "off",
+    "object-shorthand": "off",
+    "no-var": "off",
+    "vars-on-top": "off",
+    "prefer-template": "off",
+    "no-param-reassign": "off"
+  }
+}

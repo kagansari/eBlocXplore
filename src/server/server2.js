@@ -1,6 +1,7 @@
 /* eslint-disable */
 //TODO: delete all commentes.
-var path = require("path");
+module.exports = function (web3, app) {
+
 var global_myaccount;
 
 function getBlockWhile(blockno, end, count, data, res) {
@@ -61,14 +62,16 @@ function isBlockno(blockno) {
   return false;
 }
 
-function retAddress(addrhash) {
-  var balance = web3.utils.fromWei(web3.eth.getBalance(addrhash));
+async function retAddress(addrhash) {
+  var balance = await web3.eth.getBalance(addrhash)
+  balance = web3.utils.fromWei(balance);
+  console.log(`balance: `, balance);
   dat = [["Balance", balance]];
   return dat;
 }
 
-function retTransaction(txHash) {
-  var tx = web3.eth.getTransaction(txHash);
+async function retTransaction(txHash) {
+  var tx = await web3.eth.getTransaction(txHash);
   dat = null;
   if (tx != null) {
     dat = [
@@ -87,8 +90,8 @@ function retTransaction(txHash) {
   return dat;
 }
 
-function retBlock(block) {
-  var block = web3.eth.getBlock(block);
+async function retBlock(block) {
+  var block = await web3.eth.getBlock(block);
   if (block == null) {
     return null;
   }
@@ -115,138 +118,133 @@ function retBlock(block) {
   return dat;
 }
 
-function getBlockTx(number, endBlockNumber, myaccount, j, abtx, res) {
-  web3.eth.getBlock(number, function(error, block) {
-    var myFlag = 0;
-    if (block != null && block.transactions != null) {
-      for (var k = 0; k < block.transactions.length; k++) {
-        // block.transactions.forEach( function(e) {
-        e = block.transactions[k];
-        //console.log(global_myaccount)
-        if (global_myaccount == web3.eth.getTransaction(block.transactions[k]).to && global_myaccount == web3.eth.getTransaction(block.transactions[k]).from) {
-          var d = new Date(block.timestamp * 1000);
-          var t = d.toGMTString();
-          abtx[j] = [
-            "Tx: " +
-              "@@" +
-              web3.eth.getTransaction(block.transactions[k]).hash +
-              "@@",
-            '<span class="glyphicon glyphicon-resize-horizontal" style="color:AntiqueWhite2"></span> ' +
-              "@@" +
-              web3.eth.getTransaction(block.transactions[k]).to +
-              "@@" +
-              " <br>Value: " +
-              web3.utils.fromWei(web3.eth.getTransaction(block.transactions[k]).value, "ether") +
-              "<br>Gas: " +
-              web3.utils.fromWei(web3.eth.getTransaction(block.transactions[k]).gas, "ether") +
-              "<br>Time: " +
-              t
-          ];
-          j++;
-        } else if (global_myaccount == web3.eth.getTransaction(block.transactions[k]).from) {
-          var d = new Date(block.timestamp * 1000);
-          var t = d.toGMTString();
-          abtx[j] = [
-            "Tx: " +
-              "@@" +
-              web3.eth.getTransaction(block.transactions[k]).hash +
-              "@@",
-            '<span class="glyphicon glyphicon-arrow-right" style="color:orange"></span> ' +
-              "@@" +
-              web3.eth.getTransaction(block.transactions[k]).to +
-              "@@" +
-              " </br>Value: " +
-              web3.utils.fromWei(
-                web3.eth.getTransaction(block.transactions[k]).value,
-                "ether"
-              ) +
-              "<br>Gas: " +
-              web3.utils.fromWei(
-                web3.eth.getTransaction(block.transactions[k]).gas,
-                "ether"
-              ) +
-              "<br>Time: " +
-              t
-          ];
-          j++;
-        } else if (global_myaccount == web3.eth.getTransaction(block.transactions[k]).to) {
-          var d = new Date(block.timestamp * 1000);
-          var t = d.toGMTString();
-          abtx[j] = [
-            "Tx: " +
-              "@@" +
-              web3.eth.getTransaction(block.transactions[k]).hash +
-              "@@",
-            '<span class="glyphicon glyphicon-arrow-left" style="color:green"></span> ' +
-              "@@" +
-              web3.eth.getTransaction(block.transactions[k]).from +
-              "@@" +
-              " <br>Value: " +
-              web3.utils.fromWei(
-                web3.eth.getTransaction(block.transactions[k]).value,
-                "ether"
-              ) +
-              "<br>Gas: " +
-              web3.utils.fromWei(
-                web3.eth.getTransaction(block.transactions[k]).gas,
-                "ether"
-              ) +
-              "<br>Time: " +
-              t
-          ];
-          j++;
-        }
-        if (j == 21) {
-          if (myFlag == 0) {
-            try {
-              res.setHeader("Content-Type", "application/json");
-              res.send(JSON.stringify(abtx, null, 3));
-              myFlag = 1;
-            } catch (err) {
-              //console.log(err)
-            }
+async function getBlockTx(number, endBlockNumber, myaccount, j, abtx, res) {
+  console.log(`getting block ${number}`);
+  block = await web3.eth.getBlock(number);
+  // web3.eth.getBlock(number, function(error, block) {
+  var myFlag = 0;
+  if (block != null && block.transactions != null) {
+    for (var k = 0; k < block.transactions.length; k++) {
+      // block.transactions.forEach( function(e) {
+      e = block.transactions[k];
+      // console.log(`getting tx ${block.transactions[k]} type: ${typeof block.transactions[k]}`);
+      //console.log(global_myaccount)
+      var tx = await web3.eth.getTransaction(block.transactions[k]);
+      if (global_myaccount == tx.to && global_myaccount == tx.from) {
+        var d = new Date(block.timestamp * 1000);
+        var t = d.toGMTString();
+        abtx[j] = [
+          "Tx: " +
+            "@@" +
+            tx.hash +
+            "@@",
+          '<span class="glyphicon glyphicon-resize-horizontal" style="color:AntiqueWhite2"></span> ' +
+            "@@" +
+            tx.to +
+            "@@" +
+            " <br>Value: " +
+            web3.utils.fromWei(String(tx.value), "ether") +
+            "<br>Gas: " +
+            web3.utils.fromWei(String(tx.gas), "ether") +
+            "<br>Time: " +
+            t
+        ];
+        j++;
+      } else if (global_myaccount == tx.from) {
+        var d = new Date(block.timestamp * 1000);
+        var t = d.toGMTString();
+        abtx[j] = [
+          "Tx: " +
+            "@@" +
+            tx.hash +
+            "@@",
+          '<span class="glyphicon glyphicon-arrow-right" style="color:orange"></span> ' +
+            "@@" +
+            tx.to +
+            "@@" +
+            " </br>Value: " + web3.utils.fromWei(String(tx.value), "ether") +
+            "<br>Gas: " +
+            web3.utils.fromWei(String(tx.gas), "ether") +
+            "<br>Time: " +
+            t
+        ];
+        j++;
+      } else if (global_myaccount == tx.to) {
+        var d = new Date(block.timestamp * 1000);
+        var t = d.toGMTString();
+        abtx[j] = [
+          "Tx: " +
+            "@@" +
+            tx.hash +
+            "@@",
+          '<span class="glyphicon glyphicon-arrow-left" style="color:green"></span> ' +
+            "@@" +
+            tx.from +
+            "@@" +
+            " <br>Value: " +
+            web3.utils.fromWei(String(tx.value), "ether") +
+            "<br>Gas: " +
+            web3.utils.fromWei(String(tx.gas), "ether") +
+            "<br>Time: " +
+            t
+        ];
+        j++;
+      }
+      if (j == 21) {
+        if (myFlag == 0) {
+          try {
+            res.setHeader("Content-Type", "application/json");
+            res.send(JSON.stringify(abtx, null, 3));
+            myFlag = 1;
+          } catch (err) {
+            //console.log(err)
           }
-          return;
         }
+        return;
       }
     }
-    if (j == 21) {
-      if (myFlag == 0) {
-        try {
-          res.setHeader("Content-Type", "application/json");
-          res.send(JSON.stringify(abtx, null, 3));
-          myFlag = 1;
-        } catch (err) {
-          //console.log(err)
-        }
+  }
+  if (j == 21) {
+    if (myFlag == 0) {
+      try {
+        res.setHeader("Content-Type", "application/json");
+        res.send(JSON.stringify(abtx, null, 3));
+        myFlag = 1;
+      } catch (err) {
+        //console.log(err)
       }
-      return;
     }
+    return;
+  }
 
-    if (number <= endBlockNumber) {
-      getBlockTx(number + 1, endBlockNumber, myaccount, j, abtx, res);
-    } else {
-      if (myFlag == 0) {
-        try {
-          res.setHeader("Content-Type", "application/json");
-          res.send(JSON.stringify(abtx, null, 3));
-          myFlag = 1;
-        } catch (err) {
-          //console.log(err)
-        }
+  if (number <= endBlockNumber) {
+    await getBlockTx(number + 1, endBlockNumber, myaccount, j, abtx, res);
+  } else {
+    if (myFlag == 0) {
+      try {
+        res.setHeader("Content-Type", "application/json");
+        res.send(JSON.stringify(abtx, null, 3));
+        myFlag = 1;
+      } catch (err) {
+        //console.log(err)
       }
-      return;
     }
-  });
+    return;
+  }
+  // });
 }
 
-function getTransactionsByAccount(myaccount, howmany, res, abtx) {
-  endBlockNumber = web3.eth.blockNumber;
-  startBlockNumber = endBlockNumber - 1000;
+async function getTransactionsByAccount(myaccount, howmany, res, abtx) {
+  endBlockNumber = 4527693//await web3.eth.getBlockNumber();
+  startBlockNumber = endBlockNumber - 10;
 
   j = 0; //abtx.length;
   global_myaccount = myaccount;
-  getBlockTx(startBlockNumber, endBlockNumber, myaccount, j, abtx, res);
+  try {
+    await getBlockTx(startBlockNumber, endBlockNumber, myaccount, j, abtx, res);
+  } catch(e) {
+    console.error(e);
+  }
 }
 
 function getBlock(number, endBlockNumber, res, j, abtx) {
@@ -340,30 +338,6 @@ function getLatestTransactions(howmany, res, abtx) {
   })
 }
 
-// ----------------------------------------------------------------------------------
-var Web3 = require("web3");
-var web3 = new Web3(Web3.givenProvider || 'http://localhost:8545');
-
-if (!web3.eth.net.isListening()) {
-  console.log("not connected");
-} else {
-  console.log("connected");
-}
-
-var express = require("express");
-var app = express();
-var bodyParser = require("body-parser");
-var reload = require("reload");
-
-reload(app);
-
-// Create application/x-www-form-urlencoded parser
-var urlencodedParser = bodyParser.urlencoded({ extended: false });
-
-// app.use(bodyParser.json()) // @todo probable forgotten
-// console.log(`__dirname: `, __dirname);
-app.use(express.static(path.join(__dirname, "../client")));
-
 app.get("/btabl", function(req, res) {
   dat = [];
   retBtabl(dat, res);
@@ -401,26 +375,27 @@ app.get("/sbltabl", function(req, res) {
   res.send(JSON.stringify(sbltabl));
 });
 
-app.get("/what/*", function(req, res) {
+app.get("/what/*", async function(req, res) {
   var btx;
   var htype;
 
-  if (isAddress(req.params["0"])) {
+  if (web3.utils.isAddress(req.params["0"])) {
+    console.log(`${req.params['0']} is address`);
     res.setHeader("Content-Type", "application/json");
     res.send(JSON.stringify("Address", null, 3));
   } else if (isBlockno(req.params["0"])) {
     htype = "Block";
-    btx = web3.eth.getBlock(req.params["0"]);
+    btx = await web3.eth.getBlock(req.params["0"]);
     if (btx == null) {
       htype = "None";
     }
     res.setHeader("Content-Type", "application/json");
     res.send(JSON.stringify(htype, null, 3));
   } else if (isHash(req.params["0"])) {
-    btx = web3.eth.getBlock(req.params["0"]);
+    btx = await web3.eth.getBlock(req.params["0"]);
     htype = "Block";
     if (btx == null) {
-      btx = web3.eth.getTransaction(req.params["0"]);
+      btx = await web3.eth.getTransaction(req.params["0"]);
       htype = "Transaction";
       if (btx == null) {
         htype = "None";
@@ -431,26 +406,29 @@ app.get("/what/*", function(req, res) {
   }
 });
 
-app.get("/search/*", function(req, res) {
+app.get("/search/*", async function(req, res) {
   var btx;
 
   btx = [];
+  console.log(`type of req.params[0]: ${web3.utils.isAddress(req.params["0"])}`);
+  // debugger;
   abtx = [];
-  if (isAddress(req.params["0"])) {
+  if (web3.utils.isAddress(req.params["0"])) {
     //global_res = res;
-    abtx = retAddress(req.params["0"]);
+    abtx = await retAddress(req.params["0"]);
     //console.log(abtx);
-    getTransactionsByAccount(req.params["0"], 200, res, abtx);
+    // debugger;
+    await getTransactionsByAccount(req.params["0"], 200, res, abtx);
     //res.setHeader('Content-Type', 'application/json');
     //res.send(JSON.stringify(abtx, null, 3));
   } else if (isBlockno(req.params["0"])) {
-    btx = retBlock(req.params["0"]);
+    btx = await retBlock(req.params["0"]);
     res.setHeader("Content-Type", "application/json");
     res.send(JSON.stringify(btx, null, 3));
   } else if (isHash(req.params["0"])) {
-    btx = retBlock(req.params["0"]);
+    btx = await retBlock(req.params["0"]);
     if (btx == null) {
-      btx = retTransaction(req.params["0"]);
+      btx = await retTransaction(req.params["0"]);
       if (btx == null) {
         btx = "None";
       }
@@ -460,8 +438,4 @@ app.get("/search/*", function(req, res) {
   }
 });
 
-var server = app.listen(8000, function() {
-  var host = "localhost";
-  var port = server.address().port;
-  console.log("Example app listening at http://%s:%s", host, port);
-});
+};

@@ -46,7 +46,10 @@
 
   function fillsearchtable(searchfor) {
     $("#coverpage").hide();
+    console.log(`window.stablefirst: `, window.stablefirst);
+    window.stablefirst = true;
     $.get("what/" + searchfor, function(result) {
+      console.log(`what result for ${searchfor}: `, result);
       if (result == "None") {
         if (window.stablefirst) { return; }
         var oTable = $('#tableblock2').dataTable();
@@ -56,7 +59,9 @@
       }
 
       if (window.stablefirst) {
+        console.log(`searching ${searchfor} type: ${typeof searchfor}`);
         $.get("search/" + searchfor, function(result) {
+          console.log(`search result for ${searchfor}: `, result);
           $('#tableblock2').DataTable({
             bServerSide: false,
             data: result,
@@ -86,7 +91,9 @@
         });
         window.stablefirst = false;
       } else {
+        console.log(`not stable, searching ${searchfor}`);
         $.get("search/" + searchfor, function(result) {
+          console.log(`search result for unstable ${searchfor}: `, result);
           var oTable = $('#tableblock2').dataTable();
           oTable.fnClearTable();
           oTable.fnAddData(result);
