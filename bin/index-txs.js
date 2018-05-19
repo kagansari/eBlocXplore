@@ -104,7 +104,11 @@ const continueSyncingTxs = async (chunkSize) => {
 const run = async () => {
   try {
     // create db connection
-    const mongoConn = await mongodb.MongoClient.connect(process.env.MONGODB_URL);
+    const mongoConn = await mongodb.MongoClient.connect(process.env.MONGODB_URL, {
+      server: {
+        socketOptions: { connectTimeoutMS: 300000 },
+      },
+    });
     db = mongoConn.db(process.env.NETWORK_NAME);
     await db.createCollection('settings', { autoIndexId: false });
     await db.collection('txs').createIndex({ from: 1, to: 1 });

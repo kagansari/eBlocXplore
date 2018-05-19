@@ -48,7 +48,11 @@ app.use('/api', require('./api-router'));
     await app.listen(process.env.PORT);
     console.log(`App listening at http://localhost:${process.env.PORT}`); // eslint-disable-line no-console
 
-    const mongoConn = await mongodb.MongoClient.connect(process.env.MONGODB_URL);
+    const mongoConn = await mongodb.MongoClient.connect(process.env.MONGODB_URL, {
+      server: {
+        socketOptions: { connectTimeoutMS: 300000 },
+      },
+    });
     global.db = mongoConn.db(process.env.NETWORK_NAME);
     console.log(`Connected to database ${process.env.MONGODB_URL}`); // eslint-disable-line no-console
 
